@@ -1,80 +1,61 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Note from "./components/Note"
+import noteService from './services/notes'
 
-const App = (props) => {
-  const [ notes, setNotes ] = useState(props.notes)
+const App = () => {
+  const [ notes, setNotes ] = useState([])
   const [ newNote, setNewNote ] = useState('a new note...')
   const [ showAll, setShowAll ] = useState(true)
 
+  const initialDatabaseGet = () => {
+    noteService
+    .getAll()
+    .then(initialNotes => setNotes(initialNotes))
+  }
+  useEffect(initialDatabaseGet, [])
+  
   const notesToShow = showAll ?
     notes : notes.filter(note => note.important === true)
 
   const addNote = (event) => {
     event.preventDefault()
-    console.log('button clicked', event.target)
     const noteObject = {
       content: newNote,
       date: new Date().toISOString(),
       important: Math.random() < 0.5,
-      id: notes.length + 1,
     }
-    setNotes([...notes, noteObject])
-    setNewNote('')
+
+    noteService
+      .create(noteObject)
+      .then(addedNote => {
+        setNotes([...notes, addedNote])
+        setNewNote('')
+      })
   }
 
   const handleNoteChange = (event) => {
     console.log(event.target.value)
     setNewNote(event.target.value)
   }
-  // const courses = [
-  //   {
-  //     name: 'Half Stack application development',
-  //     id: 1,
-  //     parts: [
-  //       {
-  //         name: 'Fundamentals of React',
-  //         exercises: 10,
-  //         id: 1
-  //       },
-  //       {
-  //         name: 'Using props to pass data',
-  //         exercises: 7,
-  //         id: 2
-  //       },
-  //       {
-  //         name: 'State of a component',
-  //         exercises: 14,
-  //         id: 3
-  //       },
-  //       {
-  //         name: 'Redux',
-  //         exercises: 11,
-  //         id: 4
-  //       }
-  //     ]
-  //   }, 
-  //   {
-  //     name: 'Node.js',
-  //     id: 2,
-  //     parts: [
-  //       {
-  //         name: 'Routing',
-  //         exercises: 3,
-  //         id: 1
-  //       },
-  //       {
-  //         name: 'Middlewares',
-  //         exercises: 7,
-  //         id: 2
-  //       }
-  //     ]
-  //   }
-  // ]
 
+  const toggleImportanceOf = id => {
+    const note = notes.find(n => n.id === id)
+    const changedNote = { ...note, important: !note.important}
+    
+    noteService
+      .update(id, changedNote)
+      .then(updatedNote => {
+        setNotes(notes.map(note => note.id !== id ? note : updatedNote))
+      })
+      .catch(error => {
+        alert(
+          `the note '${note.content}' was already deleted from server`
+        )
+        setNotes(notes.filter(n => n.id !== id))
+      })
+  }
+ 
   return ( 
-    // <div>
-    //   {courses.map(course => <Course key={course.id} course={course} />)}
-    // </div> )
     <>
       <h1>Notes</h1>
       <div>
@@ -84,7 +65,10 @@ const App = (props) => {
       </div>
       <ul>
         {notesToShow.map(note =>
-          <Note key={note.id} note={note} />
+          <Note 
+            key={note.id} 
+            note={note}
+            toggleImportance={() => toggleImportanceOf(note.id)} />
           )}
       </ul>
       <form onSubmit={addNote}>
