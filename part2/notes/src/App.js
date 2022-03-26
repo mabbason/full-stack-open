@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import Note from "./components/Note"
+import Notification from './components/Notification'
 import noteService from './services/notes'
 
 const App = () => {
   const [ notes, setNotes ] = useState([])
   const [ newNote, setNewNote ] = useState('a new note...')
   const [ showAll, setShowAll ] = useState(true)
+  const [ errorMsg, setErrorMsg ] = useState('some error happened...')
 
   const initialDatabaseGet = () => {
     noteService
@@ -45,19 +47,34 @@ const App = () => {
     noteService
       .update(id, changedNote)
       .then(updatedNote => {
-        setNotes(notes.map(note => note.id !== id ? note : updatedNote))
-      })
-      .catch(error => {
-        alert(
-          `the note '${note.content}' was already deleted from server`
+        setErrorMsg(
+          `Note '${note.content}' was already removed from server`
         )
+        setTimeout(() => {
+          setErrorMsg(null)
+        }, 5000)
         setNotes(notes.filter(n => n.id !== id))
       })
   }
  
+  const Footer = () => {
+    const footerStyle = {
+      color: 'green',
+      fontStyle: 'italic',
+      fontSize: 16
+    }
+    return (
+      <div style={footerStyle}>
+        <br />
+        <em>Note app, Department of Computer Science, University of Helsinki 2022</em>
+      </div>
+    )
+  }
+
   return ( 
     <>
       <h1>Notes</h1>
+      <Notification message={errorMsg} />
       <div>
         <button onClick={() => setShowAll(!showAll)}>
           show {showAll ? 'important' : 'all'}
@@ -78,6 +95,7 @@ const App = () => {
         />
         <button type="submit">save</button>
       </form>
+      <Footer />
     </>
     )
 }

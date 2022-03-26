@@ -1,0 +1,30 @@
+h2 {
+  color: blue;
+  font-style: italic;
+}
+
+.contact {
+  color: rgb(68, 68, 68);
+  padding-top: 3px;
+  font-size: 15px;
+}
+
+.success {
+  color: rgb(57, 136, 20);
+  background: lightgrey;
+  font-size: 20px;
+  border-style: solid;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.error {
+  color: rgb(255, 0, 0);
+  background: lightgrey;
+  font-size: 20px;
+  border-style: solid;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 10px;
+}

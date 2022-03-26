@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import personService from './services/persons'
+import Notification from './components/Notification'
 
 const Persons = ({ persons, onClick }) => {
   return (
@@ -37,6 +38,14 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNum, setNewNum] = useState('')
   const [filterBy, setFilterBy] = useState('')
+  const [flashMsg, setFlashMsg] = useState({})
+
+  const showMsg = (msg, isError = false) => {
+    setFlashMsg({ msg, isError })
+    setTimeout(() => {
+      setFlashMsg({})
+    }, 5000)
+  }
 
   const initialDatabaseGet = () => {
     personService
@@ -57,6 +66,7 @@ const App = () => {
         .create(personObj)
         .then(newContact => {
           setPersons([...persons, newContact])
+          showMsg(`Added ${newName}`)
           setNewName('')
           setNewNum('')
         })
@@ -71,8 +81,12 @@ const App = () => {
           .then(updatedContact => {
             const listWithoutUpdated = persons.filter(p => p.id !== contact.id)
             setPersons([...listWithoutUpdated, updatedContact])
+            showMsg(`Updated ${updatedContact.name}`)
             setNewName('')
             setNewNum('')
+          })
+          .catch(_ => {
+            showMsg(`${contact.name} has already been removed from server`, true)
           })
       }
     }
@@ -97,7 +111,9 @@ const App = () => {
             setPersons(newPersons)
           }
         })
-        .catch(_ => console.log('failed to remove'))
+        .catch(_ => {
+          showMsg(`Failed to remove ${contactName}`, true)
+        })
     }
   }
 
@@ -116,6 +132,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={flashMsg.msg} isError={flashMsg.isError} />
         <FilterPpl 
           filterBy={filterBy} 
           onChange={handleFilterChange}
