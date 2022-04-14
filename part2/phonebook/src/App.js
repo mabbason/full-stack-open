@@ -70,6 +70,10 @@ const App = () => {
           setNewName('')
           setNewNum('')
         })
+        .catch(error => {
+          console.log(error.response.data)
+          showMsg(error.response.data.error, true)
+        })
     } else {
       if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
         const contact = persons.find(p => p.name.toLowerCase() === 
@@ -85,8 +89,8 @@ const App = () => {
             setNewName('')
             setNewNum('')
           })
-          .catch(_ => {
-            showMsg(`${contact.name} has already been removed from server`, true)
+          .catch(error => {
+            showMsg(error.response.data.error, true)
           })
       }
     }
@@ -101,13 +105,13 @@ const App = () => {
  
   const handleDeleteBtn = e => {
     const contactId = e.target.getAttribute('data-id')
-    const contactName = persons.find(p => p.id === Number(contactId)).name
+    const contactName = persons.find(p => p.id === contactId).name
     if (window.confirm(`Delete ${contactName}?`)) {
       personService
         .remove(contactId)
         .then(res => {
-          if (res.status === 200) {
-            const newPersons = persons.filter(p => p.id !== Number(contactId))
+          if (res.status === 204) {
+            const newPersons = persons.filter(p => p.id !== contactId)
             setPersons(newPersons)
           }
         })
@@ -118,7 +122,7 @@ const App = () => {
   }
 
   const pplToShow = (() => {
-    const filterInput = filterBy.trim()
+    const filterInput = filterBy.trim().toLowerCase()
     return persons.filter( person => 
       person.name.toLowerCase().includes(filterInput) )
   })()
